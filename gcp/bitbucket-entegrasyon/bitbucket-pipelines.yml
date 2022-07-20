@@ -1,0 +1,35 @@
+options:
+  docker: true
+
+definitions:
+  services:
+    docker:
+      memory: 3072
+
+pipelines:
+  custom:
+    deploy-to-test-a:
+      - step:
+          name: Deploy to test-a
+          image: google/cloud-sdk:alpine
+          clone:
+            enabled: false
+          deployment: test-a
+          script:
+            - echo $GCP_TEST_A_KEY_FILE | base64 -d > /tmp/gcp_service_account.json
+            - gcloud auth activate-service-account --key-file /tmp/gcp_service_account.json --project $GCP_TEST_A_PROJECT_ID
+            - export IMAGE_NAME=europe-docker.pkg.dev/test-a-353320/test/$GCP_IMAGE_NAME:$BITBUCKET_COMMIT
+            - gcloud run deploy $GCP_IMAGE_NAME --image $IMAGE_NAME --region europe-west4 --platform=managed
+  default:
+    - step:
+        name: Build and push
+        image: google/cloud-sdk:alpine
+        caches:
+          - docker
+        script:
+          - echo $GCP_TEST_A_KEY_FILE | base64 -d > /tmp/gcp_service_account.json
+          - gcloud auth activate-service-account --key-file /tmp/gcp_service_account.json
+          - gcloud auth configure-docker europe-docker.pkg.dev
+          - export IMAGE_NAME=europe-docker.pkg.dev/test-a-353320/test/$GCP_IMAGE_NAME:$BITBUCKET_COMMIT
+          - docker build -f ./Dockerfile -t $IMAGE_NAME .
+          - docker push $IMAGE_NAME
