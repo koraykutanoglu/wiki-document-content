@@ -1,3 +1,10 @@
+// Configure the Google Cloud provider
+provider "google" {
+ credentials = file("key.json")
+ project     = "secops-343615"
+ region      = "us-central1"
+}
+
 // Terraform plugin for creating random ids
 resource "random_id" "instance_id" {
  byte_length = 8
@@ -15,6 +22,7 @@ resource "google_compute_instance" "default" {
    }
  }
 
+// Make sure flask is installed on all new instances for later steps
  metadata_startup_script = "sudo apt-get update; sudo apt-get install -yq build-essential python-pip rsync"
 
  network_interface {
