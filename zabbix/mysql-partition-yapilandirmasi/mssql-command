@@ -1,0 +1,12 @@
+DELIMITER $$
+CREATE PROCEDURE partition_maintenance_all_30and400(SCHEMA_NAME VARCHAR(32))
+BEGIN
+CALL partition_maintenance(SCHEMA_NAME, 'history', 30, 24, 3);
+CALL partition_maintenance(SCHEMA_NAME, 'history_log', 30, 24, 3);
+CALL partition_maintenance(SCHEMA_NAME, 'history_str', 30, 24, 3);
+CALL partition_maintenance(SCHEMA_NAME, 'history_text', 30, 24, 3);
+CALL partition_maintenance(SCHEMA_NAME, 'history_uint', 30, 24, 3);
+CALL partition_maintenance(SCHEMA_NAME, 'trends', 400, 24, 3);
+CALL partition_maintenance(SCHEMA_NAME, 'trends_uint', 400, 24, 3);
+END$$
+DELIMITER ;
