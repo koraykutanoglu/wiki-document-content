@@ -1,27 +1,27 @@
 apiVersion: apps/v1 # apps/v1beta2 in Kube 1.8, extensions/v1beta1 in Kube < 1.8
 kind: DaemonSet
 metadata:
-  name: vrops-cadvisor
-  namespace: kube-system
+  name: cadvisor
+  namespace: cadvisor
   labels:
-    app: vrops-cadvisor
+    app: cadvisor
   annotations:
       seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
 spec:
   selector:
     matchLabels:
-      app: vrops-cadvisor
+      app: cadvisor
   template:
     metadata:
       labels:
-        app: vrops-cadvisor
+        app: cadvisor
         version: v0.33.0
     spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
-      - name: vrops-cadvisor
+      - name: cadvisor
         image: google/cadvisor:v0.33.0
         resources:
           requests:
@@ -48,7 +48,7 @@ spec:
         ports:
           - name: http
             containerPort: 8080 #Port exposed
-            hostPort : 31194 #Host's port - Port to expose your cAdvisor DaemonSet on each node
+            #hostPort : 31194 #Host's port - Port to expose your cAdvisor DaemonSet on each node
             protocol: TCP
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
