@@ -1,29 +1,34 @@
----
-apiVersion: apps/v1
+apiVersion: apps/v1 # apps/v1beta2 in Kube 1.8, extensions/v1beta1 in Kube < 1.8
 kind: DaemonSet
 metadata:
-  name: cadvisor
-  namespace: cadvisor
+  name: vrops-cadvisor
+  namespace: kube-system
+  labels:
+    app: vrops-cadvisor
+  annotations:
+      seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
 spec:
   selector:
     matchLabels:
-      name: cadvisor
+      app: vrops-cadvisor
   template:
     metadata:
       labels:
-        name: cadvisor
+        app: vrops-cadvisor
+        version: v0.33.0
     spec:
-      serviceAccountName: cadvisor
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       containers:
-      - name: cadvisor
-        image: gcr.io/cadvisor/cadvisor:v0.46.0
+      - name: vrops-cadvisor
+        image: google/cadvisor:v0.33.0
         resources:
           requests:
-            memory: 400Mi
-            cpu: 400m
+            memory: 250Mi
+            cpu: 250m
           limits:
-            memory: 2000Mi
-            cpu: 800m
+            cpu: 400m
         volumeMounts:
         - name: rootfs
           mountPath: /rootfs
@@ -35,15 +40,16 @@ spec:
           mountPath: /sys
           readOnly: true
         - name: docker
-          mountPath: /var/lib/docker
+          mountPath: /var/lib/docker  #Mouting Docker volume 
           readOnly: true
         - name: disk
           mountPath: /dev/disk
           readOnly: true
         ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
+          - name: http
+            containerPort: 8080 #Port exposed
+            hostPort : 31194 #Host's port - Port to expose your cAdvisor DaemonSet on each node
+            protocol: TCP
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
       volumes:
@@ -58,7 +64,7 @@ spec:
           path: /sys
       - name: docker
         hostPath:
-          path: /var/lib/docker
+          path: /var/lib/docker #Docker path in Host System
       - name: disk
         hostPath:
           path: /dev/disk
