@@ -1,0 +1,222 @@
+alertRelabelConfigs: {}
+alertmanager:
+  enabled: false
+  persistence:
+    size: 50Gi
+  podSecurityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+configmapReload:
+  prometheus:
+    containerSecurityContext: {}
+    enabled: false
+    extraArgs: {}
+    extraConfigmapMounts: []
+    extraVolumeDirs: []
+    image:
+      digest: ''
+      pullPolicy: IfNotPresent
+      repository: jimmidyson/configmap-reload
+      tag: v0.8.0
+    name: configmap-reload
+    resources: {}
+extraManifests: []
+extraScrapeConfigs: ''
+forceNamespace: ''
+imagePullSecrets: []
+kube-state-metrics:
+  enabled: false
+networkPolicy:
+  enabled: false
+podSecurityPolicy:
+  enabled: false
+prometheus-node-exporter:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+  enabled: false
+  rbac:
+    pspEnabled: false
+prometheus-pushgateway:
+  enabled: false
+  serviceAnnotations:
+    prometheus.io/probe: pushgateway
+rbac:
+  create: true
+ruleFiles: {}
+server:
+  affinity: {}
+  alertmanagers: []
+  baseURL: ''
+  configMapOverrideName: ''
+  configPath: /etc/config/prometheus.yml
+  containerSecurityContext: {}
+  defaultFlagsOverride: []
+  deploymentAnnotations: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ''
+  enableServiceLinks: true
+  env: []
+  extraArgs: {}
+  extraConfigmapLabels: {}
+  extraConfigmapMounts: []
+  extraFlags:
+    - web.enable-lifecycle
+  extraHostPathMounts: []
+  extraInitContainers: []
+  extraSecretMounts: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  global:
+    evaluation_interval: 1m
+    scrape_interval: 1m
+    scrape_timeout: 10s
+  hostAliases: []
+  hostNetwork: false
+  image:
+    digest: ''
+    pullPolicy: IfNotPresent
+    repository: quay.io/prometheus/prometheus
+    tag: ''
+  ingress:
+    annotations: {}
+    enabled: false
+    extraLabels: {}
+    extraPaths: []
+    hosts: []
+    path: /
+    pathType: Prefix
+    tls: []
+  livenessProbeFailureThreshold: 3
+  livenessProbeInitialDelay: 30
+  livenessProbePeriodSeconds: 15
+  livenessProbeSuccessThreshold: 1
+  livenessProbeTimeout: 10
+  name: server
+  nodeSelector: {}
+  persistentVolume:
+    accessModes:
+      - ReadWriteOnce
+    annotations: {}
+    enabled: true
+    existingClaim: ''
+    labels: {}
+    mountPath: /data
+    size: 50Gi
+    subPath: ''
+  podAnnotations: {}
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+  podLabels: {}
+  podSecurityPolicy:
+    annotations: {}
+  prefixURL: ''
+  priorityClassName: ''
+  probeHeaders: []
+  probeScheme: HTTP
+  readinessProbeFailureThreshold: 3
+  readinessProbeInitialDelay: 30
+  readinessProbePeriodSeconds: 5
+  readinessProbeSuccessThreshold: 1
+  readinessProbeTimeout: 4
+  remoteRead: []
+  remoteWrite: []
+  replicaCount: 1
+  resources: {}
+  retention: 1d
+  securityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+  service:
+    annotations: {}
+    clusterIP: ''
+    enabled: true
+    externalIPs: []
+    gRPC:
+      enabled: false
+      servicePort: 10901
+    labels: {}
+    loadBalancerIP: ''
+    loadBalancerSourceRanges: []
+    servicePort: 80
+    sessionAffinity: None
+    statefulsetReplica:
+      enabled: false
+      replica: 0
+    type: ClusterIP
+  sidecarContainers: {}
+  sidecarTemplateValues: {}
+  startupProbe:
+    enabled: false
+    failureThreshold: 30
+    periodSeconds: 5
+    timeoutSeconds: 10
+  statefulSet:
+    annotations: {}
+    enabled: false
+    headless:
+      annotations: {}
+      gRPC:
+        enabled: false
+        servicePort: 10901
+      labels: {}
+      servicePort: 80
+    labels: {}
+    podManagementPolicy: OrderedReady
+  storagePath: ''
+  strategy:
+    type: Recreate
+  tcpSocketProbeEnabled: false
+  terminationGracePeriodSeconds: 300
+  tolerations: []
+  verticalAutoscaler:
+    enabled: false
+serverFiles:
+  alerting_rules.yml: {}
+  alerts: {}
+  prometheus.yml:
+    rule_files:
+      - /etc/config/recording_rules.yml
+      - /etc/config/alerting_rules.yml
+      - /etc/config/rules
+      - /etc/config/alerts
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets:
+              - localhost:9090
+      - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        job_name: kubernetes-nodes-cadvisor
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+            source_labels:
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_service_name
+              - __meta_kubernetes_endpoint_port_name
+          - replacement: kubernetes.default.svc:443
+            target_label: __address__
+          - regex: (.+)
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+            source_labels:
+              - __meta_kubernetes_node_name
+            target_label: __metrics_path__
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+  recording_rules.yml: {}
+  rules: {}
+serviceAccounts:
+  server:
+    annotations: {}
+    create: true
+    name: ''
