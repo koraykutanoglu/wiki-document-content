@@ -128,7 +128,7 @@ expose:
         port: 4443
   tls:
     auto:
-      commonName: secops
+      commonName: harbor.secops.com.tr
     certSource: auto
     enabled: true
     secret:
